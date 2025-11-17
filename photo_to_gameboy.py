@@ -4,7 +4,7 @@ Photo to Game Boy Converter
 Author: https://github.com/towelie8
 """
 
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageOps
 import sys
 import os
 import argparse
@@ -34,7 +34,7 @@ def rgb_to_gb_color(rgb):
         return GB_PALETTE[3]  # Schwarz
 
 def convert_to_gameboy(input_path, output_path, width=160, height=144, 
-                       contrast=1.2, sharpness=1.2, dithering=True):
+                       contrast=1.2, sharpness=1.2, dithering=True, invert=False):
     """
     Konvertiert ein Foto zu Game Boy Format
     
@@ -46,9 +46,10 @@ def convert_to_gameboy(input_path, output_path, width=160, height=144,
         contrast: Kontrast-Verstärkung (1.0 = normal, höher = mehr Kontrast)
         sharpness: Schärfe (1.0 = normal)
         dithering: Floyd-Steinberg Dithering für mehr Details
+        invert: Helligkeit invertieren (hell wird dunkel und umgekehrt)
     """
     
-    print(f"📸 Lade Bild: {input_path}")
+    print(f"Lade Bild: {input_path}")
     
     try:
         # Bild laden
@@ -75,6 +76,11 @@ def convert_to_gameboy(input_path, output_path, width=160, height=144,
         
         # Zu Graustufen konvertieren
         img = img.convert('L')
+        
+        # Helligkeit invertieren wenn gewünscht
+        if invert:
+            print("   Invertiere Helligkeit...")
+            img = ImageOps.invert(img)
         
         if dithering:
             # Floyd-Steinberg Dithering für bessere Details
@@ -104,13 +110,13 @@ def convert_to_gameboy(input_path, output_path, width=160, height=144,
         
         # Speichern
         img.save(output_path, 'PNG')
-        print(f"✅ Gespeichert: {output_path}")
+        print(f"Gespeichert: {output_path}")
         print(f"   Format: {width}x{height} PNG, 4 Graustufen")
         
         return True
         
     except Exception as e:
-        print(f"❌ Fehler: {e}")
+        print(f"Fehler: {e}")
         return False
 
 def batch_convert(input_dir, output_dir, **kwargs):
@@ -155,6 +161,8 @@ def main():
                        help='Schärfe (Standard: 1.2)')
     parser.add_argument('--no-dithering', action='store_true',
                        help='Kein Dithering verwenden')
+    parser.add_argument('--invert', action='store_true',
+                       help='Helligkeit invertieren (hell wird dunkel)')
     parser.add_argument('--batch', action='store_true',
                        help='Batch-Modus: Alle Bilder in Ordner konvertieren')
     
@@ -165,7 +173,8 @@ def main():
         'height': args.height,
         'contrast': args.contrast,
         'sharpness': args.sharpness,
-        'dithering': not args.no_dithering
+        'dithering': not args.no_dithering,
+        'invert': args.invert
     }
     
     if args.batch:
@@ -185,14 +194,17 @@ if __name__ == "__main__":
         print("  --contrast 1.5     Kontrast erhöhen")
         print("  --sharpness 1.3    Schärfe erhöhen")
         print("  --no-dithering     Ohne Dithering")
+        print("  --invert           Helligkeit invertieren")
         print("  --batch            Alle Bilder in Ordner konvertieren")
         print("\nBeispiele:")
         print("  # Einzelnes Bild")
         print("  python3 photo_to_gameboy.py portrait.jpg portrait_gb.png")
+        print("\n  # Mit invertierter Helligkeit (für bessere Hauttöne)")
+        print("  python3 photo_to_gameboy.py portrait.jpg portrait_gb.png --invert")
         print("\n  # Kleineres Bild für Sprite")
         print("  python3 photo_to_gameboy.py katze.jpg katze_gb.png --width 32 --height 32")
-        print("\n  # Batch-Konvertierung")
-        print("  python3 photo_to_gameboy.py fotos/ fotos_gb/ --batch")
+        print("\n  # Batch-Konvertierung mit Invert")
+        print("  python3 photo_to_gameboy.py fotos/ fotos_gb/ --batch --invert")
         print("\n  # Mehr Kontrast für bessere Sichtbarkeit")
         print("  python3 photo_to_gameboy.py foto.jpg foto_gb.png --contrast 1.5")
         sys.exit(0)
