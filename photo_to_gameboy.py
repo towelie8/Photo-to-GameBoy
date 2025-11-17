@@ -48,7 +48,7 @@ def convert_to_gameboy(input_path, output_path, width=160, height=144,
         dithering: Floyd-Steinberg Dithering für mehr Details
     """
     
-    print(f"📸 Lade Bild: {input_path}")
+    print(f"Lade Bild: {input_path}")
     
     try:
         # Bild laden
@@ -104,13 +104,13 @@ def convert_to_gameboy(input_path, output_path, width=160, height=144,
         
         # Speichern
         img.save(output_path, 'PNG')
-        print(f"✅ Gespeichert: {output_path}")
+        print(f"Gespeichert: {output_path}")
         print(f"   Format: {width}x{height} PNG, 4 Graustufen")
         
         return True
         
     except Exception as e:
-        print(f"❌ Fehler: {e}")
+        print(f"Fehler: {e}")
         return False
 
 def batch_convert(input_dir, output_dir, **kwargs):
@@ -122,7 +122,7 @@ def batch_convert(input_dir, output_dir, **kwargs):
     files = [f for f in os.listdir(input_dir) 
              if f.lower().endswith(supported_formats)]
     
-    print(f"\n📁 Batch-Konvertierung: {len(files)} Dateien gefunden\n")
+    print(f"\nBatch-Konvertierung: {len(files)} Dateien gefunden\n")
     
     success_count = 0
     for i, filename in enumerate(files, 1):
@@ -136,7 +136,7 @@ def batch_convert(input_dir, output_dir, **kwargs):
             success_count += 1
         print()
     
-    print(f"\n✨ Fertig! {success_count}/{len(files)} Bilder erfolgreich konvertiert")
+    print(f"\nFertig! {success_count}/{len(files)} Bilder erfolgreich konvertiert")
 
 def main():
     parser = argparse.ArgumentParser(
