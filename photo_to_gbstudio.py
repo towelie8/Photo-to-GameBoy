@@ -5,7 +5,7 @@ Converts photos to GB Studio-compatible background images with 4-color palette
 Author: https://github.com/towelie8
 """
 
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageOps
 import sys
 import os
 import argparse
@@ -132,7 +132,7 @@ def create_monochrome_override(img, output_path):
 
 def convert_to_gbstudio(input_path, output_path, width=None, height=None,
                         contrast=1.2, sharpness=1.2, dithering=True,
-                        auto_size=False, mono=False):
+                        auto_size=False, mono=False, invert=False):
     """
     Konvertiert ein Foto zu GB Studio Format
 
@@ -146,6 +146,7 @@ def convert_to_gbstudio(input_path, output_path, width=None, height=None,
         dithering: Floyd-Steinberg Dithering verwenden
         auto_size: Automatisch auf gültiges Vielfaches von 8px anpassen
         mono: Monochrome Override erstellen
+        invert: Helligkeit invertieren (hell wird dunkel und umgekehrt)
     """
 
     # Standardwerte setzen
@@ -191,6 +192,17 @@ def convert_to_gbstudio(input_path, output_path, width=None, height=None,
         # Auf Zielgröße skalieren
         img = img.resize((width, height), Image.Resampling.LANCZOS)
         print(f"   Skaliert: {width}x{height} Pixel")
+
+        # Zu Graustufen konvertieren (für bessere Palette-Konvertierung)
+        img_gray = img.convert('L')
+        
+        # Helligkeit invertieren wenn gewünscht
+        if invert:
+            print("   Invertiere Helligkeit...")
+            img_gray = ImageOps.invert(img_gray)
+        
+        # Zurück zu RGB für Palette-Konvertierung
+        img = img_gray.convert('RGB')
 
         # Zu GB Studio 4-Farben Palette konvertieren
         print("   Konvertiere zu GB Studio Palette...")
@@ -292,6 +304,8 @@ def main():
                        help='Automatisch auf gültiges Vielfaches von 8px anpassen')
     parser.add_argument('--mono', action='store_true',
                        help='Monochrome Override (.mono.png) erstellen')
+    parser.add_argument('--invert', action='store_true',
+                       help='Helligkeit invertieren (hell wird dunkel)')
     parser.add_argument('--batch', action='store_true',
                        help='Batch-Modus: Alle Bilder in Ordner konvertieren')
 
@@ -304,7 +318,8 @@ def main():
         'sharpness': args.sharpness,
         'dithering': not args.no_dithering,
         'auto_size': args.auto_size,
-        'mono': args.mono
+        'mono': args.mono,
+        'invert': args.invert
     }
 
     if args.batch:
@@ -326,16 +341,19 @@ if __name__ == "__main__":
         print("  --no-dithering     Ohne Dithering")
         print("  --auto-size        Automatisch auf gültiges Vielfaches von 8px anpassen")
         print("  --mono             Monochrome Override (.mono.png) erstellen")
+        print("  --invert           Helligkeit invertieren")
         print("  --batch            Alle Bilder in Ordner konvertieren")
         print("\nBeispiele:")
         print("  # Einzelnes Bild mit Standard-Größe")
         print("  python3 photo_to_gbstudio.py foto.jpg szene.png")
+        print("\n  # Mit invertierter Helligkeit für bessere Hauttöne")
+        print("  python3 photo_to_gbstudio.py foto.jpg szene.png --invert")
         print("\n  # Mit Monochrome Override für GB Classic")
         print("  python3 photo_to_gbstudio.py foto.jpg szene.png --mono")
         print("\n  # Custom Größe mit Auto-Anpassung")
         print("  python3 photo_to_gbstudio.py foto.jpg szene.png --width 320 --height 288 --auto-size")
-        print("\n  # Batch-Konvertierung")
-        print("  python3 photo_to_gbstudio.py fotos/ assets/backgrounds/ --batch")
+        print("\n  # Batch-Konvertierung mit Invert")
+        print("  python3 photo_to_gbstudio.py fotos/ assets/backgrounds/ --batch --invert")
         print("\n  # Mit erhöhtem Kontrast und Monochrome Override")
         print("  python3 photo_to_gbstudio.py foto.jpg szene.png --contrast 1.5 --mono")
         sys.exit(0)

@@ -49,7 +49,8 @@ def run_conversion():
             "photo_to_gameboy.py",
             input_dir,
             gameboy_output,
-            "--batch"
+            "--batch",
+            "--invert"
         ], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Fehler bei Game Boy Konvertierung: {e}")
@@ -70,7 +71,8 @@ def run_conversion():
             input_dir,
             gbstudio_output,
             "--batch",
-            "--auto-size"
+            "--auto-size",
+            "--invert"
         ], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Fehler bei GB Studio Konvertierung: {e}")
